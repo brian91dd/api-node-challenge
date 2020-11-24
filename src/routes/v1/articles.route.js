@@ -7,4 +7,8 @@ router
   .route('/')
   .post(articlesController.create);
 
+router
+  .route('/:id')
+  .put(articlesController.edit);
+
 module.exports = router;
