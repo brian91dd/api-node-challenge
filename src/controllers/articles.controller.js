@@ -2,6 +2,26 @@ const { Types: { ObjectId } } = require('mongoose');
 const ArticleModel = require('../models/article.model.js');
 const ApiError = require('../utils/ApiError');
 
+const list = async (req, res, next) => {
+  try {
+    const query = { ...req.query };
+
+    if (req.query.tags) {
+      query.tags = Array.isArray(req.query.tags) ? { $in: req.query.tags } : req.query.tags;
+    }
+
+    const articles = await ArticleModel
+      .find(query)
+      .populate({
+        path: 'userId',
+      });
+
+    res.status(200).json(articles);
+  } catch (err) {
+    next(err);
+  }
+};
+
 const create = (req, res, next) => {
   const {
     title, text, userId, tags,
@@ -79,4 +99,5 @@ module.exports = {
   create,
   edit,
   deleteArticle,
+  list,
 };
