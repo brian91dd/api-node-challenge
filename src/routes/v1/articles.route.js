@@ -9,6 +9,7 @@ router
 
 router
   .route('/:id')
-  .put(articlesController.edit);
+  .put(articlesController.edit)
+  .delete(articlesController.deleteArticle);
 
 module.exports = router;

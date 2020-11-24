@@ -54,7 +54,29 @@ const edit = async (req, res, next) => {
   }
 };
 
+const deleteArticle = async (req, res, next) => {
+  const { id } = req.params;
+
+  try {
+    const article = await ArticleModel.findOne({ _id: ObjectId(id) });
+
+    if (!article) {
+      throw new ApiError({
+        message: 'Article doesn\'t exist',
+        status: 403,
+      });
+    }
+
+    await article.remove();
+
+    res.status(201).json({ _id: id });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   create,
   edit,
+  deleteArticle,
 };
