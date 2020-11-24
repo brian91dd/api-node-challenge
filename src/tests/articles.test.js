@@ -96,3 +96,23 @@ test('Should return error when updating article from different user', (done) => 
       done();
     });
 });
+
+test('Should delete an article', (done) => {
+  request(app)
+    .delete(`/v1/articles/${article1._id}`)
+    .then((res) => {
+      expect(res.body._id).toEqual(article1._id);
+
+      done();
+    });
+});
+
+test('Should throw an error when article doesn\'t exist', (done) => {
+  request(app)
+    .delete('/v1/articles/5fbd15d5c0b0566d7ab69ee9')
+    .then((res) => {
+      expect(res.body.message).toEqual('Article doesn\'t exist');
+
+      done();
+    });
+});
