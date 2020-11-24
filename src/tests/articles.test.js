@@ -19,32 +19,27 @@ const article1Edit = {
   tags: ['lorem', 'dolor', 'adipiscing'],
 };
 
+const article1EditDifferentUser = {
+  userId: '5fbd10e9ae72de60320df3a1',
+  title: 'Article edit with different user',
+  text: 'This should throw an error',
+  tags: ['should', 'throw', 'error'],
+};
+
 const article2 = {
-  userId: '5fbcf537573c87455a55abe6',
   title: 'Article 2 test title',
   text: 'Velit imperdiet ultrices tempor montes rhoncus bibendum.',
   tags: ['ultrices', 'rhoncus'],
 };
 
-const article3 = {
-  userId: '5fbd10e9ae72de60320df3a1',
-  title: 'Article 3 test title',
-  text: 'Sed ornare sociosqu sociis vel eu venenatis.',
-  tags: ['ornare', 'lorem'],
-};
-
 beforeAll(async () => {
-  const newUser = await UserModel.insertMany([{
+  await UserModel.insertMany([{
     _id: new mongoose.Types.ObjectId('5fbcf537573c87455a55abe6'),
     name: 'test user',
   }, {
     _id: new mongoose.Types.ObjectId('5fbd10e9ae72de60320df3a1'),
     name: 'test user 2',
   }]);
-
-  article1.userId = newUser[0]._id.toString();
-  article2.userId = newUser[0]._id.toString();
-  article3.userId = newUser[1]._id.toString();
 });
 
 afterAll(async () => {
@@ -69,6 +64,16 @@ test('Should create a new article', (done) => {
     });
 });
 
+test('Should throw error when not sending userId', (done) => {
+  request(app)
+    .post('/v1/articles')
+    .send(article2)
+    .then((res) => {
+      expect(res.body.message).toEqual('userId is required');
+      done();
+    });
+});
+
 test('Should edit an article', (done) => {
   request(app)
     .put(`/v1/articles/${article1._id}`)
@@ -76,6 +81,17 @@ test('Should edit an article', (done) => {
     .then((res) => {
       expect(res.body).toMatchObject(article1Edit);
       expect(res.body._id).toEqual(article1._id);
+
+      done();
+    });
+});
+
+test('Should return error when updating article from different user', (done) => {
+  request(app)
+    .put(`/v1/articles/${article1._id}`)
+    .send(article1EditDifferentUser)
+    .then((res) => {
+      expect(res.body.message).toEqual('Can\'t edit article from different user');
 
       done();
     });
