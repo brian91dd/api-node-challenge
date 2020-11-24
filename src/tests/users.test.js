@@ -8,6 +8,10 @@ const user1 = {
   name: 'test user',
 };
 
+const user2 = {
+  name: 'test user 2',
+};
+
 afterAll(async () => {
   const collections = await mongoose.connection.db.collections();
 
@@ -24,7 +28,22 @@ test('Should create a new user', (done) => {
     .attach('avatar', path.join(__dirname, 'assets/test.png'))
     .field('name', user1.name)
     .then((res) => {
-      expect(res.body).toEqual(user1);
+      expect(res.body).toHaveProperty('name', user1.name);
+      expect(res.body).toHaveProperty('_id');
+      expect(res.body).toHaveProperty('avatar');
+
+      done();
+    });
+});
+
+test('Should create a new user without avatar', (done) => {
+  request(app)
+    .post('/v1/users')
+    .field('name', user2.name)
+    .then((res) => {
+      expect(res.body).toHaveProperty('name', user2.name);
+      expect(res.body).toHaveProperty('_id');
+      expect(res.body).not.toHaveProperty('avatar');
 
       done();
     });
