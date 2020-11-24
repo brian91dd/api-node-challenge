@@ -12,6 +12,13 @@ const article1 = {
   tags: ['lorem', 'dolor', 'adipiscing'],
 };
 
+const article1Edit = {
+  userId: '5fbcf537573c87455a55abe6',
+  title: 'This is the article modified',
+  text: 'This is the text modified',
+  tags: ['lorem', 'dolor', 'adipiscing'],
+};
+
 const article2 = {
   userId: '5fbcf537573c87455a55abe6',
   title: 'Article 2 test title',
@@ -56,6 +63,19 @@ test('Should create a new article', (done) => {
     .send(article1)
     .then((res) => {
       expect(res.body).toMatchObject(article1);
+
+      article1._id = res.body._id;
+      done();
+    });
+});
+
+test('Should edit an article', (done) => {
+  request(app)
+    .put(`/v1/articles/${article1._id}`)
+    .send(article1Edit)
+    .then((res) => {
+      expect(res.body).toMatchObject(article1Edit);
+      expect(res.body._id).toEqual(article1._id);
 
       done();
     });
