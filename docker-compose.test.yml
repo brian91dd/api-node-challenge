@@ -1,0 +1,5 @@
+services:
+  nodejs:
+    command: npm run test
+    env_file:
+      - .env.test

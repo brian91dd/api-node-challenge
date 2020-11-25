@@ -7,13 +7,15 @@
 
 ## Configuration
 
-For development copy .env.example to .env.development
+For development copy .env.example to .env.development, write a slack token to SLACK_TOKEN env
 
 ```
-MONGODB_HOST=This is the mongodb url
-PORT=Port where the app will be running
+MONGODB_HOST=mongodb://localhost/challenge
+PORT=3000
 SLACK_TOKEN=Slack token to send messages
 ```
+
+if you are using docker, use this setting for MONGODB_HOST `MONGODB_HOST=mongodb://db/database-to-choose-for-dev`
 
 ## Running locally
 
@@ -22,19 +24,33 @@ npm install
 npm start
 ```
 
+## Running it with docker
+
+```
+npm run docker:dev
+```
+
 ## Test
 
-For testing you will need to copy .env.example to .env.test
+For testing you will need to copy .env.example to .env.test. Leave slack token empty if you don't want to test slack messages
 
 ```
-MONGODB_HOST=This is the mongodb url
-PORT=Port where the app will be running
-SLACK_TOKEN=Slack token to send messages (empty if you don't want tests to send messages)
+MONGODB_HOST=mongodb://localhost/test
+PORT=3000
+SLACK_TOKEN=
 ```
 
-Then run
+if you are using docker, use this setting for MONGODB_HOST `MONGODB_HOST=mongodb://db/database-to-choose-for-test`
+
+## Running test locally
 
 ```
 npm run test
+```
+
+## Running test with docker
+
+```
+npm run docker:dev
 ```
 
