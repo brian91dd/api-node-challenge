@@ -10,6 +10,7 @@
 For development copy .env.example to .env.development, write a slack token to SLACK_TOKEN env
 
 ```
+ACCESS_TOKEN=this-is-a-test-access-token
 MONGODB_HOST=mongodb://localhost/challenge
 PORT=3000
 SLACK_TOKEN=Slack token to send messages
@@ -35,6 +36,7 @@ npm run docker:dev
 For testing you will need to copy .env.example to .env.test. Leave slack token empty if you don't want to test slack messages
 
 ```
+ACCESS_TOKEN=this-is-a-test-access-token
 MONGODB_HOST=mongodb://localhost/test
 PORT=3000
 SLACK_TOKEN=
@@ -56,4 +58,4 @@ npm run docker:dev
 
 ## API documentation
 
-Once the app is running, API documentation can be access from here `http://localhost:3000/api-docs/`
+Once the app is running, API documentation can be access from here `http://localhost:3000/api-docs/`. To run every command you should place the access_token in the authorize section at the begining.
