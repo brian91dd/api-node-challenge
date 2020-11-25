@@ -18,7 +18,7 @@ const create = async (req, res, next) => {
       if (req.file) fs.unlinkSync(req.file.path);
       throw new ApiError({
         message: 'Username already exists',
-        status: 200,
+        status: 409,
       });
     }
 

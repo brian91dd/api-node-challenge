@@ -1,6 +1,7 @@
 const { Types: { ObjectId } } = require('mongoose');
 const { WebClient } = require('@slack/web-api');
 const ArticleModel = require('../models/article.model.js');
+const UserModel = require('../models/user.model.js');
 const ApiError = require('../utils/ApiError');
 
 const slackClient = process.env.SLACK_TOKEN ? new WebClient(process.env.SLACK_TOKEN) : null;
@@ -31,10 +32,19 @@ const create = async (req, res, next) => {
   } = req.body;
 
   try {
-    if (!userId && !ObjectId.isValid(userId)) {
+    if (!userId || !ObjectId.isValid(userId)) {
       throw new ApiError({
-        message: 'userId is required',
-        status: 200,
+        message: 'A valid userId is required',
+        status: 400,
+      });
+    }
+
+    const user = await UserModel.findOne({ _id: new ObjectId(userId) });
+
+    if (!user) {
+      throw new ApiError({
+        message: 'User doesn\'t exist',
+        status: 400,
       });
     }
 
@@ -47,7 +57,7 @@ const create = async (req, res, next) => {
     if (slackClient) {
       await slackClient.chat.postMessage({
         channel: '#general',
-        text: article.title,
+        text: `${user.name} - ${article.title}`,
       });
     }
 
