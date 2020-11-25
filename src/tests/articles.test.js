@@ -6,6 +6,8 @@ const app = require('../app');
 const UserModel = require('../models/user.model');
 const ArticleModel = require('../models/article.model');
 
+const authToken = `Bearer ${process.env.ACCESS_TOKEN}`;
+
 const article1 = {
   userId: '5fbcf537573c87455a55abe6',
   title: 'Article test title',
@@ -63,6 +65,7 @@ describe('POST articles', () => {
   test('Should create two new articles', async () => {
     await request(app)
       .post('/v1/articles')
+      .set('Authorization', authToken)
       .send(article1)
       .then((res) => {
         expect(res.body).toMatchObject(article1);
@@ -72,6 +75,7 @@ describe('POST articles', () => {
 
     await request(app)
       .post('/v1/articles')
+      .set('Authorization', authToken)
       .send(article2)
       .then((res) => {
         expect(res.body).toMatchObject(article2);
@@ -89,6 +93,7 @@ describe('POST articles', () => {
 
     request(app)
       .post('/v1/articles')
+      .set('Authorization', authToken)
       .send(articleWithoutUserId)
       .then((res) => {
         expect(res.body.message).toEqual('A valid userId is required');
@@ -106,6 +111,7 @@ describe('POST articles', () => {
 
     request(app)
       .post('/v1/articles')
+      .set('Authorization', authToken)
       .send(articleWithoutUserId)
       .then((res) => {
         expect(res.body.message).toEqual('User doesn\'t exist');
@@ -123,6 +129,7 @@ describe('PUT articles', () => {
 
     request(app)
       .put(`/v1/articles/${article1._id}`)
+      .set('Authorization', authToken)
       .send(article1Edit)
       .then((res) => {
         expect(res.body).toMatchObject(article1Edit);
@@ -140,6 +147,7 @@ describe('PUT articles', () => {
 
     request(app)
       .put(`/v1/articles/${article1._id}`)
+      .set('Authorization', authToken)
       .send(article1EditDifferentUser)
       .then((res) => {
         expect(res.body.message).toEqual('Can\'t edit article from different user');
@@ -153,6 +161,7 @@ describe('GET articles', () => {
   test('Should return the articles with a specific tag', (done) => {
     request(app)
       .get('/v1/articles')
+      .set('Authorization', authToken)
       .query({ tags: [article1.tags[1]] })
       .then((res) => {
         expect(res.body.length).toBe(1);
@@ -165,6 +174,7 @@ describe('GET articles', () => {
   test('Should return the articles with multiple tags', (done) => {
     request(app)
       .get('/v1/articles')
+      .set('Authorization', authToken)
       .query({ tags: article3.tags })
       .then((res) => {
         expect(res.body.length).toBe(3);
@@ -176,6 +186,7 @@ describe('GET articles', () => {
   test('Should not return any articles when tag doesn\'t match', (done) => {
     request(app)
       .get('/v1/articles')
+      .set('Authorization', authToken)
       .query({ tags: ['noArticle'] })
       .then((res) => {
         expect(res.body.length).toEqual(0);
@@ -187,6 +198,7 @@ describe('GET articles', () => {
   test('Should return any articles with specific title and the user populated', (done) => {
     request(app)
       .get('/v1/articles')
+      .set('Authorization', authToken)
       .query({ title: article1.title })
       .then((res) => {
         expect(res.body.length).toEqual(1);
@@ -200,6 +212,7 @@ describe('GET articles', () => {
   test('Should delete an article', (done) => {
     request(app)
       .delete(`/v1/articles/${article1._id}`)
+      .set('Authorization', authToken)
       .then((res) => {
         expect(res.body._id).toEqual(article1._id);
 
@@ -210,6 +223,7 @@ describe('GET articles', () => {
   test('Should throw an error when article doesn\'t exist', (done) => {
     request(app)
       .delete('/v1/articles/5fbd15d5c0b0566d7ab69ee9')
+      .set('Authorization', authToken)
       .then((res) => {
         expect(res.body.message).toEqual('Article doesn\'t exist');
 

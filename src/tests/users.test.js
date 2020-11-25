@@ -5,6 +5,8 @@ const mongoose = require('mongoose');
 const app = require('../app');
 const UserModel = require('../models/user.model');
 
+const authToken = `Bearer ${process.env.ACCESS_TOKEN}`;
+
 const user1 = {
   name: 'test user',
 };
@@ -36,6 +38,7 @@ afterAll(async () => {
 test('Should create a new user', (done) => {
   request(app)
     .post('/v1/users')
+    .set('Authorization', authToken)
     .attach('avatar', path.join(__dirname, 'assets/test.png'))
     .field('name', user1.name)
     .then((res) => {
@@ -50,6 +53,7 @@ test('Should create a new user', (done) => {
 test('Should create a new user without avatar', (done) => {
   request(app)
     .post('/v1/users')
+    .set('Authorization', authToken)
     .field('name', user2.name)
     .then((res) => {
       expect(res.body).toHaveProperty('name', user2.name);
@@ -62,6 +66,7 @@ test('Should create a new user without avatar', (done) => {
 
 test('Should alert duplicated user', (done) => request(app)
   .post('/v1/users')
+  .set('Authorization', authToken)
   .attach('avatar', path.join(__dirname, 'assets/test.png'))
   .field('name', user3.name)
   .then((res) => {
