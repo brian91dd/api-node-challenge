@@ -3,7 +3,7 @@ const { WebClient } = require('@slack/web-api');
 const ArticleModel = require('../models/article.model.js');
 const ApiError = require('../utils/ApiError');
 
-const slackClient = new WebClient(process.env.SLACK_TOKEN);
+const slackClient = process.env.SLACK_TOKEN ? new WebClient(process.env.SLACK_TOKEN) : null;
 
 const list = async (req, res, next) => {
   try {
@@ -44,10 +44,12 @@ const create = async (req, res, next) => {
 
     article.save();
 
-    await slackClient.chat.postMessage({
-      channel: '#general',
-      text: article.title,
-    });
+    if (slackClient) {
+      await slackClient.chat.postMessage({
+        channel: '#general',
+        text: article.title,
+      });
+    }
 
     res.status(201).json(article);
   } catch (err) {
