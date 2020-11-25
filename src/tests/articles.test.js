@@ -6,7 +6,7 @@ const app = require('../app');
 const UserModel = require('../models/user.model');
 const ArticleModel = require('../models/article.model');
 
-const authToken = `Bearer ${process.env.ACCESS_TOKEN}`;
+const authToken = `${process.env.ACCESS_TOKEN}`;
 
 const article1 = {
   userId: '5fbcf537573c87455a55abe6',

@@ -18,6 +18,16 @@
       "description": "API for articles"
     }
   ],
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "security": [{
+    "jwt": []
+  }],
   "consumes": [
     "application/json"
   ],
@@ -33,6 +43,11 @@
         "summary": "Get all users",
         "produces": [
           "application/json"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
         ],
         "responses": {
           "200": {

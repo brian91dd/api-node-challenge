@@ -9,6 +9,7 @@ const envFile = process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : '.env';
 dotenv.config({ path: path.resolve(__dirname, `../${envFile}`) });
 const routesV1 = require('./routes/v1');
 const errorMiddleware = require('./middlewares/error.middleware');
+const authMiddleware = require('./middlewares/auth.middleware');
 
 const app = express();
 const swaggerDocument = require('./swagger.json');
@@ -21,7 +22,7 @@ mongoose.connect(process.env.MONGODB_HOST, {
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(bodyParser.json());
-app.use('/v1', routesV1);
+app.use('/v1', authMiddleware.handler, routesV1);
 app.use('/*', (req, res) => res.status(404).send('Not Found'));
 app.use(errorMiddleware.handler);
 

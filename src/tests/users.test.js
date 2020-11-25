@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const app = require('../app');
 const UserModel = require('../models/user.model');
 
-const authToken = `Bearer ${process.env.ACCESS_TOKEN}`;
+const authToken = `${process.env.ACCESS_TOKEN}`;
 
 const user1 = {
   name: 'test user',
