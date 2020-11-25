@@ -54,3 +54,6 @@ npm run test
 npm run docker:dev
 ```
 
+## API documentation
+
+Once the app is running, API documentation can be access from here `http://localhost:3000/api-docs/`
