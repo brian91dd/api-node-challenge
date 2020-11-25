@@ -11,7 +11,11 @@ const errorMiddleware = require('./middlewares/error.middleware');
 
 const app = express();
 
-mongoose.connect(process.env.MONGODB_HOST, { useNewUrlParser: true });
+mongoose.connect(process.env.MONGODB_HOST, {
+  useCreateIndex: true,
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
 app.use(bodyParser.json());
 app.use('/v1', routesV1);

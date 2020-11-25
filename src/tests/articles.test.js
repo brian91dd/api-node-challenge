@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 
 const app = require('../app');
 const UserModel = require('../models/user.model');
+const ArticleModel = require('../models/article.model');
 
 const article1 = {
   userId: '5fbcf537573c87455a55abe6',
@@ -12,21 +13,8 @@ const article1 = {
   tags: ['lorem', 'dolor', 'adipiscing'],
 };
 
-const article1Edit = {
-  userId: '5fbcf537573c87455a55abe6',
-  title: 'This is the article modified',
-  text: 'This is the text modified',
-  tags: ['lorem', 'dolor', 'adipiscing'],
-};
-
-const article1EditDifferentUser = {
-  userId: '5fbd10e9ae72de60320df3a1',
-  title: 'Article edit with different user',
-  text: 'This should throw an error',
-  tags: ['should', 'throw', 'error'],
-};
-
 const article2 = {
+  userId: '5fbd10e9ae72de60320df3a1',
   title: 'Article 2 test title',
   text: 'Velit imperdiet ultrices tempor montes rhoncus bibendum.',
   tags: ['lorem', 'rhoncus'],
@@ -34,145 +22,181 @@ const article2 = {
 
 const article3 = {
   userId: '5fbd10e9ae72de60320df3a1',
-  title: 'Article 2 test title',
+  title: 'Article 3 test title',
   text: 'Velit imperdiet ultrices tempor montes rhoncus bibendum.',
   tags: ['lorem', 'rhoncus'],
 };
 
-beforeAll(async () => {
-  await UserModel.insertMany([{
-    _id: new mongoose.Types.ObjectId('5fbcf537573c87455a55abe6'),
-    name: 'test user',
-  }, {
-    _id: new mongoose.Types.ObjectId('5fbd10e9ae72de60320df3a1'),
-    name: 'test user 2',
-  }]);
+const user1 = {
+  _id: '5fbcf537573c87455a55abe6',
+  name: 'test user article',
+};
+
+const user2 = {
+  _id: '5fbd10e9ae72de60320df3a1',
+  name: 'test user article 2',
+};
+
+beforeEach(async () => {
+  if (mongoose.connection.db) {
+    const collections = await mongoose.connection.db.collections();
+
+    collections.forEach(async (collection) => {
+      await collection.deleteMany({});
+    });
+  }
+
+  await UserModel.insertMany([user1, user2].map(
+    (item) => ({ ...item, _id: new mongoose.Types.ObjectId(item._id) }),
+  ));
+
+  await ArticleModel.insertMany([article1, article2, article3].map(
+    (item) => ({ ...item, userId: new mongoose.Types.ObjectId(item.userId) }),
+  ));
 });
 
 afterAll(async () => {
-  const collections = await mongoose.connection.db.collections();
-
-  collections.forEach(async (collection) => {
-    await collection.deleteMany();
-  });
-
   await mongoose.connection.close();
 });
 
-test('Should create two new articles', async () => {
-  await request(app)
-    .post('/v1/articles')
-    .send(article1)
-    .then((res) => {
-      expect(res.body).toMatchObject(article1);
+describe('POST articles', () => {
+  test('Should create two new articles', async () => {
+    await request(app)
+      .post('/v1/articles')
+      .send(article1)
+      .then((res) => {
+        expect(res.body).toMatchObject(article1);
 
-      article1._id = res.body._id;
-    });
+        article1._id = res.body._id;
+      });
 
-  await request(app)
-    .post('/v1/articles')
-    .send(article3)
-    .then((res) => {
-      expect(res.body).toMatchObject(article2);
+    await request(app)
+      .post('/v1/articles')
+      .send(article2)
+      .then((res) => {
+        expect(res.body).toMatchObject(article2);
 
-      article2._id = res.body._id;
-    });
+        article2._id = res.body._id;
+      });
+  });
+
+  test('Should throw error when not sending userId', (done) => {
+    const articleWithoutUserId = {
+      title: 'This should throw error',
+      text: 'Velit imperdiet ultrices tempor montes rhoncus bibendum.',
+      tags: ['lorem', 'rhoncus'],
+    };
+
+    request(app)
+      .post('/v1/articles')
+      .send(articleWithoutUserId)
+      .then((res) => {
+        expect(res.body.message).toEqual('userId is required');
+        done();
+      });
+  });
 });
 
-test('Should throw error when not sending userId', (done) => {
-  request(app)
-    .post('/v1/articles')
-    .send(article2)
-    .then((res) => {
-      expect(res.body.message).toEqual('userId is required');
-      done();
-    });
+describe('PUT articles', () => {
+  test('Should edit an article', (done) => {
+    const article1Edit = {
+      ...article1,
+      title: 'this is a new title',
+    };
+
+    request(app)
+      .put(`/v1/articles/${article1._id}`)
+      .send(article1Edit)
+      .then((res) => {
+        expect(res.body).toMatchObject(article1Edit);
+        expect(res.body._id).toEqual(article1._id);
+
+        done();
+      });
+  });
+
+  test('Should return error when updating article from different user', (done) => {
+    const article1EditDifferentUser = {
+      ...article1,
+      userId: '5fbd10e9ae72de60320df3a1',
+    };
+
+    request(app)
+      .put(`/v1/articles/${article1._id}`)
+      .send(article1EditDifferentUser)
+      .then((res) => {
+        expect(res.body.message).toEqual('Can\'t edit article from different user');
+
+        done();
+      });
+  });
 });
 
-test('Should edit an article', (done) => {
-  request(app)
-    .put(`/v1/articles/${article1._id}`)
-    .send(article1Edit)
-    .then((res) => {
-      expect(res.body).toMatchObject(article1Edit);
-      expect(res.body._id).toEqual(article1._id);
+describe('GET articles', () => {
+  test('Should return the articles with a specific tag', (done) => {
+    request(app)
+      .get('/v1/articles')
+      .query({ tags: [article1.tags[1]] })
+      .then((res) => {
+        expect(res.body.length).toBe(1);
+        expect(res.body[0].title).toEqual(article1.title);
 
-      done();
-    });
+        done();
+      });
+  });
+
+  test('Should return the articles with multiple tags', (done) => {
+    request(app)
+      .get('/v1/articles')
+      .query({ tags: article3.tags })
+      .then((res) => {
+        expect(res.body.length).toBe(3);
+
+        done();
+      });
+  });
+
+  test('Should not return any articles when tag doesn\'t match', (done) => {
+    request(app)
+      .get('/v1/articles')
+      .query({ tags: ['noArticle'] })
+      .then((res) => {
+        expect(res.body.length).toEqual(0);
+
+        done();
+      });
+  });
+
+  test('Should return any articles with specific title and the user populated', (done) => {
+    request(app)
+      .get('/v1/articles')
+      .query({ title: article1.title })
+      .then((res) => {
+        expect(res.body.length).toEqual(1);
+        expect(res.body[0].userId.name).toBe(user1.name);
+        done();
+      });
+  });
 });
 
-test('Should return error when updating article from different user', (done) => {
-  request(app)
-    .put(`/v1/articles/${article1._id}`)
-    .send(article1EditDifferentUser)
-    .then((res) => {
-      expect(res.body.message).toEqual('Can\'t edit article from different user');
+describe('GET articles', () => {
+  test('Should delete an article', (done) => {
+    request(app)
+      .delete(`/v1/articles/${article1._id}`)
+      .then((res) => {
+        expect(res.body._id).toEqual(article1._id);
 
-      done();
-    });
-});
+        done();
+      });
+  });
 
-test('Should return the articles with a specific tag', (done) => {
-  request(app)
-    .get('/v1/articles')
-    .query({ tags: [article3.tags[1]] })
-    .then((res) => {
-      expect(res.body.length).toBe(1);
-      expect(res.body[0].title).toEqual(article3.title);
+  test('Should throw an error when article doesn\'t exist', (done) => {
+    request(app)
+      .delete('/v1/articles/5fbd15d5c0b0566d7ab69ee9')
+      .then((res) => {
+        expect(res.body.message).toEqual('Article doesn\'t exist');
 
-      done();
-    });
-});
-
-test('Should return the articles with multiple tags', (done) => {
-  request(app)
-    .get('/v1/articles')
-    .query({ tags: article3.tags })
-    .then((res) => {
-      expect(res.body.length).toBe(2);
-
-      done();
-    });
-});
-
-test('Should not return any articles when tag doesn\'t match', (done) => {
-  request(app)
-    .get('/v1/articles')
-    .query({ tags: ['noArticle'] })
-    .then((res) => {
-      expect(res.body.length).toEqual(0);
-
-      done();
-    });
-});
-
-test('Should return any articles with specific title and the user populated', (done) => {
-  request(app)
-    .get('/v1/articles')
-    .query({ title: article1Edit.title })
-    .then((res) => {
-      expect(res.body.length).toEqual(1);
-      expect(res.body[0].userId.name).toBe('test user');
-      done();
-    });
-});
-
-test('Should delete an article', (done) => {
-  request(app)
-    .delete(`/v1/articles/${article1._id}`)
-    .then((res) => {
-      expect(res.body._id).toEqual(article1._id);
-
-      done();
-    });
-});
-
-test('Should throw an error when article doesn\'t exist', (done) => {
-  request(app)
-    .delete('/v1/articles/5fbd15d5c0b0566d7ab69ee9')
-    .then((res) => {
-      expect(res.body.message).toEqual('Article doesn\'t exist');
-
-      done();
-    });
+        done();
+      });
+  });
 });

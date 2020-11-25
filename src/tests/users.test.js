@@ -3,6 +3,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 
 const app = require('../app');
+const UserModel = require('../models/user.model');
 
 const user1 = {
   name: 'test user',
@@ -12,13 +13,23 @@ const user2 = {
   name: 'test user 2',
 };
 
+const user3 = {
+  name: 'test user 3',
+};
+
+beforeEach(async () => {
+  if (mongoose.connection.db) {
+    const collections = await mongoose.connection.db.collections();
+
+    collections.forEach(async (collection) => {
+      await collection.deleteMany({});
+    });
+  }
+
+  await UserModel.insertMany([user3]);
+});
+
 afterAll(async () => {
-  const collections = await mongoose.connection.db.collections();
-
-  collections.forEach(async (collection) => {
-    await collection.deleteMany();
-  });
-
   await mongoose.connection.close();
 });
 
@@ -49,10 +60,10 @@ test('Should create a new user without avatar', (done) => {
     });
 });
 
-test('Should alert duplicated user', async (done) => request(app)
+test('Should alert duplicated user', (done) => request(app)
   .post('/v1/users')
   .attach('avatar', path.join(__dirname, 'assets/test.png'))
-  .field('name', user1.name)
+  .field('name', user3.name)
   .then((res) => {
     expect(res.body).toEqual({
       message: 'Username already exists',
