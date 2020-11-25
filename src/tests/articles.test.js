@@ -91,7 +91,24 @@ describe('POST articles', () => {
       .post('/v1/articles')
       .send(articleWithoutUserId)
       .then((res) => {
-        expect(res.body.message).toEqual('userId is required');
+        expect(res.body.message).toEqual('A valid userId is required');
+        done();
+      });
+  });
+
+  test('Should throw error if user doesn\'t exist', (done) => {
+    const articleWithoutUserId = {
+      userId: '5fbd10e9ae72de60320df3b5',
+      title: 'This should throw error',
+      text: 'Velit imperdiet ultrices tempor montes rhoncus bibendum.',
+      tags: ['lorem', 'rhoncus'],
+    };
+
+    request(app)
+      .post('/v1/articles')
+      .send(articleWithoutUserId)
+      .then((res) => {
+        expect(res.body.message).toEqual('User doesn\'t exist');
         done();
       });
   });
