@@ -72,6 +72,11 @@
         "produces": [
           "application/json"
         ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "name",
@@ -113,6 +118,11 @@
       "get": {
         "tags": [
           "Articles"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
         ],
         "summary": "Get a list of articles",
         "parameters": [
@@ -156,6 +166,11 @@
         "consumes": [
           "application/json"
         ],
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "produces": [
           "application/json"
         ],
@@ -165,7 +180,7 @@
             "name": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/ArticleUserNotPopulated"
+              "$ref": "#/definitions/ArticleCreate"
             }
           }
         ],
@@ -184,6 +199,11 @@
       "put": {
         "tags": [
           "Articles"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
         ],
         "summary": "Edit an article",
         "consumes": [
@@ -232,6 +252,11 @@
         "summary": "Delete an article",
         "consumes": [
           "application/json"
+        ],
+        "security": [
+          {
+            "Bearer": []
+          }
         ],
         "produces": [
           "application/json"
@@ -335,6 +360,26 @@
         "_id": {
           "type": "string"
         },
+        "title": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "userId": {
+          "type": "string"
+        }
+      }
+    },
+    "ArticleCreate": {
+      "type": "object",
+      "properties": {
         "title": {
           "type": "string"
         },
