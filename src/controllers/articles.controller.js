@@ -1,6 +1,9 @@
 const { Types: { ObjectId } } = require('mongoose');
+const { WebClient } = require('@slack/web-api');
 const ArticleModel = require('../models/article.model.js');
 const ApiError = require('../utils/ApiError');
+
+const slackClient = new WebClient(process.env.SLACK_TOKEN);
 
 const list = async (req, res, next) => {
   try {
@@ -22,7 +25,7 @@ const list = async (req, res, next) => {
   }
 };
 
-const create = (req, res, next) => {
+const create = async (req, res, next) => {
   const {
     title, text, userId, tags,
   } = req.body;
@@ -40,6 +43,12 @@ const create = (req, res, next) => {
     });
 
     article.save();
+
+    await slackClient.chat.postMessage({
+      channel: '#general',
+      text: article.title,
+    });
+
     res.status(201).json(article);
   } catch (err) {
     next(err);

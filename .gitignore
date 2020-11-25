@@ -1,4 +1,7 @@
 node_modules
 src/public/uploads/*
 
+.env.development
+.env.test
+
 !*.gitkeep
